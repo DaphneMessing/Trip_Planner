@@ -98,18 +98,15 @@ def search_flights(destinations, start_date, end_date):
             flights[destination["city"]] = {"error": str(e)}
     return flights
 
-
 def find_hotels(destinations, flights, budget, start_date, end_date):
     hotels = {}
-    # print("Starting hotel search for destinations based on flight data and budget constraints.")  # Debug
     for destination in destinations:
-        city = destination['city']
-        country = destination['country']
-        flight_info= flights.get(city)
+        city = destination["city"]
+        country = destination["country"]
+        flight_info = flights.get(city)
 
-        # Check if there is a valid flight to the destination
-        if flight_info and flight_info['price']:
-            remaining_budget = budget - flight_info['price']
+        if flight_info and flight_info["price"]:
+            remaining_budget = budget - flight_info["price"]
             params = {
                 "engine": "google_hotels",
                 "q": f"hotels in {city}, {country}",
@@ -117,31 +114,31 @@ def find_hotels(destinations, flights, budget, start_date, end_date):
                 "check_out_date": end_date.strftime("%Y-%m-%d"),
                 "adults": "1",
                 "currency": "USD",
-                "sort_by": "3",  # sort by lowest price
+                "sort_by": "3",  # Sort by lowest price
                 "max_price": remaining_budget,
-                "api_key": serpapi_key
+                "api_key": serpapi_key,
             }
             search = GoogleSearch(params)
             try:
                 results = search.get_json()
-                if results and 'properties' in results:  # Assuming 'properties' contains the hotel listings
-                    most_expensive_hotel = max(results['properties'], key=lambda x: x['total_rate']['extracted_lowest'])
+                if results and "properties" in results:
+                    most_expensive_hotel = max(
+                        results["properties"],
+                        key=lambda x: x["total_rate"]["extracted_lowest"],
+                    )
                     hotels[city] = {
-                        "name": most_expensive_hotel['name'],
-                        "total_rate": most_expensive_hotel['total_rate']['extracted_lowest']
+                        "name": most_expensive_hotel["name"],
+                        "price": most_expensive_hotel["total_rate"]["extracted_lowest"],
                     }
                 else:
-                    hotels[city] = {"name": "No hotels available within budget", "total_rate": 0}
+                    hotels[city] = {"name": "No hotels available", "price": 0}
             except Exception as e:
-                print(f"An error occurred while searching for hotels in {city}: {str(e)}")
-                hotels[city] = {"name": "Error retrieving hotel data", "total_rate": 0}
+                print(f"Error fetching hotels for {city}: {e}")
+                hotels[city] = {"name": "Error retrieving hotel data", "price": 0}
         else:
-            print(f"No valid flight found for {city}, skipping hotel search.")
-            hotels[city] = {"name": "No valid flight data", "total_rate": 0}
+            hotels[city] = {"name": "No valid flight data", "price": 0}
 
     return hotels
-
-
 
 
 def generate_daily_plan(city, country, start_date, end_date):
@@ -283,14 +280,15 @@ def plan_trip(request: TripRequest):
         for destination in destinations:
             city = destination["city"]
             country = destination["country"]
-            flight_info = flights.get(city, {"price": 0, "details": "No flights available"})
-            hotel_info = hotels.get(city, {"name": "No hotels available", "total_rate": 0})
+            flight_info = flights.get(city, {"price": "No flights available"})
+            hotel_info = hotels.get(city, {"name": "No hotels available", "price": "N/A"})
 
             results.append({
                 "city": city,
                 "country": country,
                 "flight_price": flight_info["price"],
-                "hotel": hotel_info,
+                "hotel_name": hotel_info["name"],
+                "hotel_price": hotel_info["price"],
             })
 
         return {"destinations": results}

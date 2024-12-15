@@ -1,0 +1,254 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background-color: #222;
+  padding: 20px;
+  color: #fff;
+  text-align: center;
+}
+
+.title {
+  font-size: 32px;
+  margin: 0;
+}
+
+.main {
+  margin-top: 40px;
+}
+
+.searchSection {
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.searchTitle {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.searchForm {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.datePicker,
+.input,
+.select {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.select {
+  appearance: none;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23333' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.searchButton {
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.newSearchButton {
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.destinationSection {
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  margin-top: 40px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.destinationGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
+  gap: 20px;
+}
+
+.destinationCard {
+  background-color: #b4b0b0;
+  padding: 20px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+}
+
+.destinationTitle {
+  font-size: 18px;
+  margin-bottom: 12px;
+  text-decoration: underline;
+}
+
+.destinationDetails {
+  margin-bottom: 16px;
+}
+
+.destinationInfo {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.destinationLabel {
+  font-weight: bold;
+}
+
+.destinationMessage {
+  color: #ff0000;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.selectButton {
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: auto;
+}
+
+.selectedDestinationSection {
+  margin-bottom: 40px;
+}
+
+.subtitle {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.tripImages {
+  margin-bottom: 20px;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.footer {
+  background-color: #f4f4f4;
+  padding: 20px;
+  text-align: center;
+}
+
+.footerText {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Centered Button Styles */
+.searchButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.searchButton {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.searchButton:hover {
+  background-color: #0056b3;
+}
+
+
+.resultsTitle {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.resultsGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .resultsGrid {
+      grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.resultCard {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.resultCardTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
