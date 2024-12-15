@@ -121,6 +121,17 @@ export default function Home() {
                             <li key={index}>{desc}</li>
                         ))}
                     </ul>
+                    <h3>Generated Images:</h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                        {dailyPlan.images.map((image, index) => (
+                            <img
+                                key={index}
+                                src={image}
+                                alt={`Generated visual ${index + 1}`}
+                                style={{ width: '200px', margin: '10px' }}
+                            />
+                        ))}
+                    </div>
                 </div>
             )}
         </div>

@@ -228,7 +228,6 @@ def display_images(image_urls):
         else:
             print(f"{index}. Error: {url}")
 
-
 @app.post("/generate_plan/")
 def generate_plan(request: dict):
     try:
@@ -240,16 +239,21 @@ def generate_plan(request: dict):
         if not city or not country:
             raise HTTPException(status_code=400, detail="City and country are required.")
 
-        # Generate the daily plan
+        # Generate the daily plan and image descriptions
         daily_plan, image_descriptions = generate_daily_plan(city, country, start_date, end_date)
+
+        # Generate images based on descriptions
+        generated_images = generate_activity_images(image_descriptions)
 
         return {
             "daily_plan": daily_plan,
             "image_descriptions": image_descriptions,
+            "images": generated_images,  # Include generated image URLs
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/plan_trip/")
 def plan_trip(request: TripRequest):
