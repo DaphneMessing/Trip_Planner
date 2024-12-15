@@ -8,6 +8,7 @@ export default function Home() {
     const [budget, setBudget] = useState('');
     const [tripType, setTripType] = useState('');
     const [results, setResults] = useState(null);
+    const [dailyPlan, setDailyPlan] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -25,6 +26,27 @@ export default function Home() {
 
             const data = await response.json();
             setResults(data.destinations);
+            setDailyPlan(null); // Clear any previous daily plan
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
+    const handleGeneratePlan = async (city, country) => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/generate_plan/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    city,
+                    country,
+                    start_date: startDate,
+                    end_date: endDate,
+                }),
+            });
+
+            const data = await response.json();
+            setDailyPlan(data);
         } catch (error) {
             console.error('Error:', error);
         }
@@ -78,7 +100,25 @@ export default function Home() {
                                     <strong>Hotel:</strong> {destination.hotel.name} <br />
                                     <strong>Hotel Price:</strong> ${destination.hotel.total_rate}
                                 </p>
+                                <button
+                                    onClick={() => handleGeneratePlan(destination.city, destination.country)}
+                                >
+                                    Select This Trip
+                                </button>
                             </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {dailyPlan && (
+                <div>
+                    <h2>Daily Plan</h2>
+                    <p>{dailyPlan.daily_plan}</p>
+                    <h3>Visual Summaries:</h3>
+                    <ul>
+                        {dailyPlan.image_descriptions.map((desc, index) => (
+                            <li key={index}>{desc}</li>
                         ))}
                     </ul>
                 </div>

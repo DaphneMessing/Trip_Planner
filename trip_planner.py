@@ -143,20 +143,113 @@ def find_hotels(destinations, flights, budget, start_date, end_date):
 
 
 
+
 def generate_daily_plan(city, country, start_date, end_date):
     openai.api_key = openai_api_key
-    prompt = f"Create a daily plan for {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}."
+    days = (end_date - start_date).days + 1
+    prompt = f"Create a detailed daily plan for a trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Include activities, meal suggestions, and local travel tips for each day of the {days}-day trip. At the end provide exactly 2 descriptions that could visually summarize the entire trip. make the description clear and detailed. please use this format for the  visually summariz:  visually summarize:\n1. A picture of the Eiffel Tower at sunset, symbolizing the iconic landmark of Paris.\n2. A snapshot of colorful flowers in full bloom at the gardens of Versailles, representing the beauty of French landscapes.\n3. An image of the Seine River with historic bridges in the background, showcasing the romantic charm of Paris.\n4. A shot of street artists painting in Montmartre, capturing the artistic spirit and bohemian vibe of the neighborhood."
+    
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a travel planner."},
-                {"role": "user", "content": prompt},
-            ],
+                {"role": "system", "content": "You are a sophisticated travel planner assistant and a creative advisor for visual content."},
+                {"role": "user", "content": prompt}
+            ]
         )
-        return response["choices"][0]["message"]["content"]
+        full_response = response['choices'][0]['message']['content'] if response['choices'][0]['message']['content'] else "No plan could be generated."
+
+        # Splitting the daily plan from the image descriptions using a case-insensitive regex
+        parts = re.split(r'(?i)visually summarize:', full_response, 1)
+        plan_content = parts[0].strip() if len(parts) > 1 else full_response
+        image_descriptions_content = parts[1].strip() if len(parts) > 1 else ""
+
+        # Extracting image descriptions using the provided method
+        image_descriptions = extract_image_descriptions(image_descriptions_content)
+
+        # Printing the extracted image descriptions for debugging
+        print("Extracted Image Descriptions:")
+        for desc in image_descriptions:
+            print(desc)
+
+        return plan_content, image_descriptions
     except Exception as e:
-        return f"Error generating plan: {e}"
+        print(f"An error occurred while generating the daily plan: {str(e)}")
+        return "Failed to generate a daily plan. Please try again.", []
+
+def extract_image_descriptions(image_descriptions_content):
+    descriptions = []
+    lines = image_descriptions_content.split('\n')
+    for line in lines:
+        # Check if the line starts with a number followed by a period, denoting the start of a description
+        if line.strip().startswith(("1.", "2.", "3.", "4.")):
+            description = line.split(". ", 1)[1] if ". " in line else line
+            descriptions.append(description)
+
+            print(f"Extracted description: {description}")  # Debug print of each description
+    return descriptions
+
+
+
+def generate_activity_images(descriptions):
+    openai.api_key = openai_api_key
+    images = []
+
+    for description in descriptions:
+        try:
+            # Generate the image using OpenAI's DALL-E
+            response = openai.Image.create(
+                #model="dalle-2",  # or "dalle-mini" depending on availability
+                prompt=description,
+                n=1,  # Number of images to generate
+                size="1024x1024"  # Choose the size of the generated images
+            )
+            # Extracting the URL from the response
+            if 'data' in response and len(response['data']) > 0:
+                image_url = response['data'][0]['url']
+                images.append(image_url)
+                print(f"Generated image for: {description} - URL: {image_url}")
+            else:
+                error_message = "No image generated"
+                images.append(error_message)
+                print(f"{error_message} for description: {description}")
+        except Exception as e:
+            error_message = f"An error occurred: {str(e)}"
+            images.append(error_message)
+            print(f"{error_message} for description: {description}")
+    
+    return images
+
+def display_images(image_urls):
+    print("\nGenerated Images:")
+    for index, url in enumerate(image_urls, start=1):
+        if url.startswith("http"):
+            print(f"{index}. {url}")
+        else:
+            print(f"{index}. Error: {url}")
+
+
+@app.post("/generate_plan/")
+def generate_plan(request: dict):
+    try:
+        city = request.get("city")
+        country = request.get("country")
+        start_date = datetime.datetime.strptime(request["start_date"], "%Y-%m-%d")
+        end_date = datetime.datetime.strptime(request["end_date"], "%Y-%m-%d")
+
+        if not city or not country:
+            raise HTTPException(status_code=400, detail="City and country are required.")
+
+        # Generate the daily plan
+        daily_plan, image_descriptions = generate_daily_plan(city, country, start_date, end_date)
+
+        return {
+            "daily_plan": daily_plan,
+            "image_descriptions": image_descriptions,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/plan_trip/")
 def plan_trip(request: TripRequest):
