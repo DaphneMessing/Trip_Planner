@@ -3,7 +3,8 @@ from serpapi.google_search import GoogleSearch
 import datetime
 import re
 
-openai_api_key = 'sk-proj-5EFH4cZPnydPbqte06PQT3BlbkFJytQlGYnhClqkCuEmqjsI'
+      
+openai_api_key = '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'
 serpapi_key = 'bac33b4ea8bb20045ef2bf2de0b101b0cae36c44ae6e7e9a25425b4830748462'
 
 def get_travel_destinations(start_date, end_date, budget, trip_type):
@@ -23,7 +24,7 @@ def get_travel_destinations(start_date, end_date, budget, trip_type):
         return destinations
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-        return []
+        return [], "No suggestions due to API failure."
     
 def parse_destination(destination):
     # Regular expression to match the pattern "City, Country (Code)"
@@ -147,25 +148,91 @@ def find_hotels(destinations, flights, budget, start_date, end_date):
     return hotels
 
 
-def generate_daily_plan(city, country, start_date, end_date, trip_type):
+def generate_daily_plan(city, country, start_date, end_date):
     openai.api_key = openai_api_key
     days = (end_date - start_date).days + 1
-    prompt = f"Create a detailed daily plan for a {trip_type} trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Include activities, meal suggestions, and local travel tips for each day of the {days}-day trip."
+    prompt = f"Create a detailed daily plan for a trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Include activities, meal suggestions, and local travel tips for each day of the {days}-day trip. At the end provide exactly 2 descriptions that could visually summarize the entire trip. make the description clear and detailed. please use this format for the  visually summariz:  visually summarize:\n1. A picture of the Eiffel Tower at sunset, symbolizing the iconic landmark of Paris.\n2. A snapshot of colorful flowers in full bloom at the gardens of Versailles, representing the beauty of French landscapes.\n3. An image of the Seine River with historic bridges in the background, showcasing the romantic charm of Paris.\n4. A shot of street artists painting in Montmartre, capturing the artistic spirit and bohemian vibe of the neighborhood."
     
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a sophisticated travel planner assistant."},
+                {"role": "system", "content": "You are a sophisticated travel planner assistant and a creative advisor for visual content."},
                 {"role": "user", "content": prompt}
             ]
         )
-        plan_content = response['choices'][0]['message']['content'] if response['choices'][0]['message']['content'] else "No plan could be generated."
-        return plan_content
+        full_response = response['choices'][0]['message']['content'] if response['choices'][0]['message']['content'] else "No plan could be generated."
+
+        # Splitting the daily plan from the image descriptions using a case-insensitive regex
+        parts = re.split(r'(?i)visually summarize:', full_response, 1)
+        plan_content = parts[0].strip() if len(parts) > 1 else full_response
+        image_descriptions_content = parts[1].strip() if len(parts) > 1 else ""
+
+        # Extracting image descriptions using the provided method
+        image_descriptions = extract_image_descriptions(image_descriptions_content)
+
+        # Printing the extracted image descriptions for debugging
+        print("Extracted Image Descriptions:")
+        for desc in image_descriptions:
+            print(desc)
+
+        return plan_content, image_descriptions
     except Exception as e:
         print(f"An error occurred while generating the daily plan: {str(e)}")
-        return "Failed to generate a daily plan. Please try again."
+        return "Failed to generate a daily plan. Please try again.", []
+
+
+def extract_image_descriptions(image_descriptions_content):
+    descriptions = []
+    lines = image_descriptions_content.split('\n')
+    for line in lines:
+        # Check if the line starts with a number followed by a period, denoting the start of a description
+        if line.strip().startswith(("1.", "2.", "3.", "4.")):
+            description = line.split(". ", 1)[1] if ". " in line else line
+            descriptions.append(description)
+
+            print(f"Extracted description: {description}")  # Debug print of each description
+    return descriptions
+
+
+
+def generate_activity_images(descriptions):
+    openai.api_key = openai_api_key
+    images = []
+
+    for description in descriptions:
+        try:
+            # Generate the image using OpenAI's DALL-E
+            response = openai.Image.create(
+                #model="dalle-2",  # or "dalle-mini" depending on availability
+                prompt=description,
+                n=1,  # Number of images to generate
+                size="1024x1024"  # Choose the size of the generated images
+            )
+            # Extracting the URL from the response
+            if 'data' in response and len(response['data']) > 0:
+                image_url = response['data'][0]['url']
+                images.append(image_url)
+                print(f"Generated image for: {description} - URL: {image_url}")
+            else:
+                error_message = "No image generated"
+                images.append(error_message)
+                print(f"{error_message} for description: {description}")
+        except Exception as e:
+            error_message = f"An error occurred: {str(e)}"
+            images.append(error_message)
+            print(f"{error_message} for description: {description}")
     
+    return images
+
+def display_images(image_urls):
+    print("\nGenerated Images:")
+    for index, url in enumerate(image_urls, start=1):
+        if url.startswith("http"):
+            print(f"{index}. {url}")
+        else:
+            print(f"{index}. Error: {url}")
+
 
 def validate_date_input(prompt):
     while True:
@@ -204,8 +271,7 @@ def validate_trip_type(prompt):
 
 
 
-
-
+20
 
 def main():
     # User inputs for trip details
@@ -249,19 +315,6 @@ def main():
         break  # Exit the loop if all conditions are met
 
 
-
-
-    # # Get destinations
-    # destinations = get_travel_destinations(start_date, end_date, budget, trip_type)
-
-    # # Search for flights from Tel Aviv to each destination
-    # flights = search_flights(destinations, start_date, end_date)
-
-    # # Find hotels in each destination within budget
-    # hotels = find_hotels(destinations, flights, budget, start_date, end_date)
-
-
-
     # Combine results and display to user
     trips = []
     for destination in destinations:
@@ -300,9 +353,17 @@ def main():
                 print(f"\nYou have selected the trip to {selected_trip['city']}, {selected_trip['country']}.")
                 # Generate daily plan
                 print("\nGenerating daily plan for your trip...")
-                daily_plan = generate_daily_plan(selected_trip['city'], selected_trip['country'], start_date, end_date, trip_type)
+                daily_plan, image_descriptions = generate_daily_plan(selected_trip['city'], selected_trip['country'], start_date, end_date)
                 print("\nDaily Plan:")
                 print(daily_plan)
+                generated_images = generate_activity_images(image_descriptions)
+                display_images(generated_images)  # Display image URLs
+                for image in generated_images:
+                    if image:
+                        print(image)
+                    else:
+                        print("No image generated for this prompt.")
+     
                 break
             else:
                 print("Invalid selection. Please enter a number corresponding to the trip.")
