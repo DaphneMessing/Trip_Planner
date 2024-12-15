@@ -74,7 +74,7 @@ def search_flights(destinations, start_date, end_date):
                     "price": cheapest_flight['price'],
                     "details": cheapest_flight
                 }
-                print(f"Cheapest flight for {destination['city']}: {cheapest_flight['price']}")
+                # print(f"Cheapest flight for {destination['city']}: {cheapest_flight['price']}")
             else:
                 print(f"No flight results found for {destination['city']}.")
                 flights[destination['city']] = {
@@ -118,8 +118,6 @@ def find_hotels(destinations, flights, budget, start_date, end_date):
                 "api_key": serpapi_key
             }
             search = GoogleSearch(params)
-
-
             try:
                 results = search.get_json()
                 if results and 'properties' in results:  # Assuming 'properties' contains the hotel listings
@@ -148,6 +146,26 @@ def find_hotels(destinations, flights, budget, start_date, end_date):
 
     return hotels
 
+
+def generate_daily_plan(city, country, start_date, end_date, trip_type):
+    openai.api_key = openai_api_key
+    days = (end_date - start_date).days + 1
+    prompt = f"Create a detailed daily plan for a {trip_type} trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Include activities, meal suggestions, and local travel tips for each day of the {days}-day trip."
+    
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a sophisticated travel planner assistant."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        plan_content = response['choices'][0]['message']['content'] if response['choices'][0]['message']['content'] else "No plan could be generated."
+        return plan_content
+    except Exception as e:
+        print(f"An error occurred while generating the daily plan: {str(e)}")
+        return "Failed to generate a daily plan. Please try again."
+    
 
 def validate_date_input(prompt):
     while True:
@@ -183,6 +201,10 @@ def validate_trip_type(prompt):
             return trip_type
         else:
             print(f"Invalid trip type. Please choose one of the following: {', '.join(valid_trip_types)}.")            
+
+
+
+
 
 
 def main():
@@ -276,7 +298,12 @@ def main():
             if 1 <= trip_choice <= len(trips):
                 selected_trip = trips[trip_choice - 1]  # Adjust index for zero-based list
                 print(f"\nYou have selected the trip to {selected_trip['city']}, {selected_trip['country']}.")
-                break  # Valid selection
+                # Generate daily plan
+                print("\nGenerating daily plan for your trip...")
+                daily_plan = generate_daily_plan(selected_trip['city'], selected_trip['country'], start_date, end_date, trip_type)
+                print("\nDaily Plan:")
+                print(daily_plan)
+                break
             else:
                 print("Invalid selection. Please enter a number corresponding to the trip.")
         except ValueError:
