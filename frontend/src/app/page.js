@@ -10,6 +10,8 @@ export default function Home() {
     const [tripType, setTripType] = useState('');
     const [results, setResults] = useState(null);
     const [selectedResult, setSelectedResult] = useState(null);
+    const [dailyPlan, setDailyPlan] = useState('');
+    const [images, setImages] = useState([]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,15 +28,32 @@ export default function Home() {
             });
 
             const data = await response.json();
-            console.log('API Response:', data);
             setResults(data.destinations);
         } catch (error) {
             console.error('Error:', error);
         }
     };
 
-    const handleSelectResult = (result) => {
+    const handleSelectResult = async (result) => {
         setSelectedResult(result);
+        try {
+            const response = await fetch('http://127.0.0.1:8000/generate_plan/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    city: result.city,
+                    country: result.country,
+                    start_date: startDate,
+                    end_date: endDate,
+                }),
+            });
+
+            const data = await response.json();
+            setDailyPlan(data.daily_plan);
+            setImages(data.images);
+        } catch (error) {
+            console.error('Error:', error);
+        }
     };
 
     return (
@@ -128,13 +147,13 @@ export default function Home() {
                                     {result.city}, {result.country}
                                 </h3>
                                 <p>
-                                    <strong>Flight Price:</strong> ${result.flight_price|| "N/A"}
+                                    <strong>Flight Price:</strong> ${result.flight_price || 'N/A'}
                                 </p>
                                 <p>
-                                    <strong>Hotel Name:</strong> {result.hotel_name || "No hotel available"}
+                                    <strong>Hotel Name:</strong> {result.hotel_name || 'No hotel available'}
                                 </p>
                                 <p>
-                                    <strong>Hotel Price:</strong> ${result.hotel_price|| "N/A"}
+                                    <strong>Hotel Price:</strong> ${result.hotel_price || 'N/A'}
                                 </p>
                                 <button className={styles.selectButton}>Select</button>
                             </div>
@@ -143,23 +162,20 @@ export default function Home() {
                 </main>
             )}
 
-            {/* Selected Result Section */}
-            {selectedResult && (
-                <main className={styles.selectedSection}>
-                    <h2 className={styles.selectedTitle}>Your Selected Trip</h2>
-                    <div className={styles.selectedCard}>
-                        <h3 className={styles.resultCardTitle}>
-                            {selectedResult.city}, {selectedResult.country}
-                        </h3>
-                        <p>
-                            <strong>Flight Price:</strong> ${selectedResult.flight_price}
-                        </p>
-                        <p>
-                            <strong>Hotel Name:</strong> {selectedResult.hotel_name}
-                        </p>
-                        <p>
-                            <strong>Hotel Price:</strong> ${selectedResult.hotel_price}
-                        </p>
+            {/* Selected Result with Daily Plan */}
+            {selectedResult && dailyPlan && (
+                <main className={styles.dailyPlanSection}>
+                    <h2 className={styles.dailyPlanTitle}>Your Daily Plan</h2>
+                    <p>{dailyPlan}</p>
+                    <div className={styles.imagesGrid}>
+                        {images.map((image, index) => (
+                            <img
+                                key={index}
+                                src={image}
+                                alt={`Activity ${index + 1}`}
+                                className={styles.activityImage}
+                            />
+                        ))}
                     </div>
                 </main>
             )}
