@@ -161,12 +161,21 @@ export default function Home() {
                     </div>
                 </main>
             )}
-
-            {/* Selected Result with Daily Plan */}
+                        
             {selectedResult && dailyPlan && (
                 <main className={styles.dailyPlanSection}>
                     <h2 className={styles.dailyPlanTitle}>Your Daily Plan</h2>
-                    <p>{dailyPlan}</p>
+                    <div className={styles.dailyPlanContainer}>
+                        {dailyPlan.split('**Day').slice(1).map((dayPlan, index) => {
+                            const [dayTitle, ...dayDescription] = dayPlan.split('** -');
+                            return (
+                                <div key={index} className={styles.dayCard}>
+                                    <div className={styles.dayHeader}>{`Day ${index + 1}${dayTitle}`}</div>
+                                    <div className={styles.dayActivities}>{dayDescription.join(' -')}</div>
+                                </div>
+                            );
+                        })}
+                    </div>
                     <div className={styles.imagesGrid}>
                         {images.map((image, index) => (
                             <img
@@ -179,6 +188,8 @@ export default function Home() {
                     </div>
                 </main>
             )}
+
+
 
             {/* Footer */}
             <footer className={styles.footer}>
