@@ -4,8 +4,8 @@ import datetime
 import re
 
       
-openai_api_key = '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'
-serpapi_key = 'bac33b4ea8bb20045ef2bf2de0b101b0cae36c44ae6e7e9a25425b4830748462'
+openai_api_key = ''
+serpapi_key = ''
 
 def get_travel_destinations(start_date, end_date, budget, trip_type):
     openai.api_key = openai_api_key
@@ -148,38 +148,80 @@ def find_hotels(destinations, flights, budget, start_date, end_date):
     return hotels
 
 
+# def generate_daily_plan(city, country, start_date, end_date):
+#     openai.api_key = openai_api_key
+#     days = (end_date - start_date).days + 1
+#     prompt = f"Create a detailed daily plan for a trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Include activities, meal suggestions, and local travel tips for each day of the {days}-day trip. At the end provide exactly 2 descriptions that could visually summarize the entire trip. make the description clear and detailed. please use this format for the  visually summariz:  visually summarize:\n1. A picture of the Eiffel Tower at sunset, symbolizing the iconic landmark of Paris.\n2. A snapshot of colorful flowers in full bloom at the gardens of Versailles, representing the beauty of French landscapes.\n3. An image of the Seine River with historic bridges in the background, showcasing the romantic charm of Paris.\n4. A shot of street artists painting in Montmartre, capturing the artistic spirit and bohemian vibe of the neighborhood."
+    
+#     try:
+#         response = openai.ChatCompletion.create(
+#             model="gpt-3.5-turbo",
+#             messages=[
+#                 {"role": "system", "content": "You are a sophisticated travel planner assistant and a creative advisor for visual content."},
+#                 {"role": "user", "content": prompt}
+#             ]
+#         )
+#         full_response = response['choices'][0]['message']['content'] if response['choices'][0]['message']['content'] else "No plan could be generated."
+
+#         # Splitting the daily plan from the image descriptions using a case-insensitive regex
+#         parts = re.split(r'(?i)visually summarize:', full_response, 1)
+#         plan_content = parts[0].strip() if len(parts) > 1 else full_response
+#         image_descriptions_content = parts[1].strip() if len(parts) > 1 else ""
+
+#         # Extracting image descriptions using the provided method
+#         image_descriptions = extract_image_descriptions(image_descriptions_content)
+
+#         # Printing the extracted image descriptions for debugging
+#         print("Extracted Image Descriptions:")
+#         for desc in image_descriptions:
+#             print(desc)
+
+#         return plan_content, image_descriptions
+#     except Exception as e:
+#         print(f"An error occurred while generating the daily plan: {str(e)}")
+#         return "Failed to generate a daily plan. Please try again.", []
+
+
+
+
+
+
+# Function to generate daily plan using OpenAI ChatGPT
 def generate_daily_plan(city, country, start_date, end_date):
-    openai.api_key = openai_api_key
-    days = (end_date - start_date).days + 1
-    prompt = f"Create a detailed daily plan for a trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Include activities, meal suggestions, and local travel tips for each day of the {days}-day trip. At the end provide exactly 2 descriptions that could visually summarize the entire trip. make the description clear and detailed. please use this format for the  visually summariz:  visually summarize:\n1. A picture of the Eiffel Tower at sunset, symbolizing the iconic landmark of Paris.\n2. A snapshot of colorful flowers in full bloom at the gardens of Versailles, representing the beauty of French landscapes.\n3. An image of the Seine River with historic bridges in the background, showcasing the romantic charm of Paris.\n4. A shot of street artists painting in Montmartre, capturing the artistic spirit and bohemian vibe of the neighborhood."
+    prompt = f"Create a daily plan for a trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Format your response as follows:\n\nDaily Plan:\n[Detailed daily plan - start each day with his number below each activity in different line]\n\nSummary: [One sentence that contains 4 visual descriptions that will help imagine what the vacation will look like]"
     
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a sophisticated travel planner assistant and a creative advisor for visual content."},
-                {"role": "user", "content": prompt}
+                {"role": "system", "content": prompt}
             ]
         )
-        full_response = response['choices'][0]['message']['content'] if response['choices'][0]['message']['content'] else "No plan could be generated."
+        
+        content = response.choices[0].message.content.strip()
 
-        # Splitting the daily plan from the image descriptions using a case-insensitive regex
-        parts = re.split(r'(?i)visually summarize:', full_response, 1)
-        plan_content = parts[0].strip() if len(parts) > 1 else full_response
-        image_descriptions_content = parts[1].strip() if len(parts) > 1 else ""
+        
+        if "Daily Plan:" in content and "Summary:" in content:
+            daily_plan, summary = content.split("Summary:")
+            daily_plan = daily_plan.replace("Daily Plan:", "").strip()
+            summary = summary.strip()
 
-        # Extracting image descriptions using the provided method
-        image_descriptions = extract_image_descriptions(image_descriptions_content)
-
-        # Printing the extracted image descriptions for debugging
-        print("Extracted Image Descriptions:")
-        for desc in image_descriptions:
-            print(desc)
-
-        return plan_content, image_descriptions
+            # Extracting image descriptions using the provided method
+            image_descriptions = extract_image_descriptions(summary)
+            # Printing the extracted image descriptions for debugging
+            print("Extracted Image Descriptions:")
+            for desc in image_descriptions:
+                print(desc)
+            return daily_plan, summary
+        else:
+            raise Exception("Unexpected response format from OpenAI ChatGPT.")
+    
     except Exception as e:
-        print(f"An error occurred while generating the daily plan: {str(e)}")
-        return "Failed to generate a daily plan. Please try again.", []
+        print(f"Error: {str(e)}")
+        return None, None
+
+
+
 
 
 def extract_image_descriptions(image_descriptions_content):
@@ -269,9 +311,6 @@ def validate_trip_type(prompt):
         else:
             print(f"Invalid trip type. Please choose one of the following: {', '.join(valid_trip_types)}.")            
 
-
-
-20
 
 def main():
     # User inputs for trip details
