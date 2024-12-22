@@ -1,4 +1,4 @@
-# AI-Trip-planner
+# Trip-planner
 
 ## Description
 
