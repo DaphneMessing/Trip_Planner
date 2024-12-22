@@ -19,8 +19,8 @@ app.add_middleware(
 
 
 # API Keys
-openai_api_key =  "" # Add your OpenAI API key here
-serpapi_key =  "" # Add your SerpAPI API key here
+openai_api_key =  "your_openai_api_key_here" # Add your OpenAI API key here
+serpapi_key =  "your_serpapi_key_here" # Add your SerpAPI API key here
 
 # Models for API request and response
 class TripRequest(BaseModel):
