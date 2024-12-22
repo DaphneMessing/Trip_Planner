@@ -20,7 +20,7 @@ app.add_middleware(
 
 # API Keys
 openai_api_key = "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"
-serpapi_key = "bac33b4ea8bb20045ef2bf2de0b101b0cae36c44ae6e7e9a25425b4830748462"
+serpapi_key = "0a2ad652a0ac8e9e1374dfda565412557889af808c1fbdc431cddde17ef469f5"
 
 # Models for API request and response
 class TripRequest(BaseModel):
@@ -53,7 +53,7 @@ def get_travel_destinations(start_date, end_date, budget, trip_type):
                 {"role": "system", "content": "You are a travel planner."},
                 {
                     "role": "user",
-                    "content": f"Given a budget of ${budget} for a {trip_type} trip in the month of {month}, suggest 2 destinations worldwide. Provide the response in this format:\n1. Destination, Country (Airport Code) - Description\n2. Destination, Country (Airport Code) - Description\n",
+                    "content": f"Given a budget of ${budget} for a {trip_type} trip in the month of {month}, suggest 5 destinations worldwide. Provide the response in this format:\n1. Destination, Country (Airport Code) - Description\n2. Destination, Country (Airport Code) - Description\n",
                 },
             ],
         )
@@ -145,7 +145,7 @@ def generate_daily_plan(city, country, start_date, end_date):
     openai.api_key = openai_api_key
     # days = (end_date - start_date).days + 1
     # prompt = f"Create a detailed daily plan for a trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Include activities, meal suggestions, and local travel tips for each day of the {days}-day trip. At the end provide exactly 2 descriptions that could visually summarize the entire trip. make the description clear and detailed. please use this format for the  visually summariz:  visually summarize:\n1. A picture of the Eiffel Tower at sunset, symbolizing the iconic landmark of Paris.\n2. A snapshot of colorful flowers in full bloom at the gardens of Versailles, representing the beauty of French landscapes.\n3. An image of the Seine River with historic bridges in the background, showcasing the romantic charm of Paris.\n4. A shot of street artists painting in Montmartre, capturing the artistic spirit and bohemian vibe of the neighborhood."
-    prompt = f"Create a daily plan for a trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Format your response as follows:\n\nDaily Plan:\n[Detailed daily plan - start each day with his number below each activity in different line. use this format: Day 1\n -Morning: relaxation at the beach or spa\n -Afternoon:  Explore the ancient Mayan ruins and learn about the history\n -Evning: Farewell drinks and evening entertainment at the resort]\n\nSummary: [provide exactly 2 descriptions that could visually summarize the entire trip. make the description clear and detailed. please use this format for the  visually summariz:  visually summarize:\n1. A picture of the Eiffel Tower at sunset, symbolizing the iconic landmark of Paris.\n2. A snapshot of colorful flowers in full bloom at the gardens of Versailles, representing the beauty of French landscapes.\n3. An image of the Seine River with historic bridges in the background, showcasing the romantic charm of Paris.\n4. A shot of street artists painting in Montmartre, capturing the artistic spirit and bohemian vibe of the neighborhood]"
+    prompt = f"Create a daily plan for a trip to {city}, {country} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}. Format your response as follows:\n\nDaily Plan:\n[Detailed daily plan - start each day with his number below each activity in different line. use this format: Day 1\n -Morning: relaxation at the beach or spa\n -Afternoon:  Explore the ancient Mayan ruins and learn about the history\n -Evning: Farewell drinks and evening entertainment at the resort]\n\nSummary: [provide exactly 4 descriptions that could visually summarize the entire trip. make the description clear and detailed. please use this format for the  visually summariz:  visually summarize:\n1. A picture of the Eiffel Tower at sunset, symbolizing the iconic landmark of Paris.\n2. A snapshot of colorful flowers in full bloom at the gardens of Versailles, representing the beauty of French landscapes.\n3. An image of the Seine River with historic bridges in the background, showcasing the romantic charm of Paris.\n4. A shot of street artists painting in Montmartre, capturing the artistic spirit and bohemian vibe of the neighborhood]"
     
     try:
         response = openai.ChatCompletion.create(
