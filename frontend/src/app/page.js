@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import styles from './TripPlanner.module.css';
+import dailyPlanStyles from './DailyPlan.module.css';
+import 'react-datepicker/dist/react-datepicker.css';
+
+
+
 
 export default function Home() {
     const [startDate, setStartDate] = useState('');
@@ -161,34 +166,43 @@ export default function Home() {
                     </div>
                 </main>
             )}
-                        
+
+
             {selectedResult && dailyPlan && (
                 <main className={styles.dailyPlanSection}>
-                    <h2 className={styles.dailyPlanTitle}>Your Daily Plan</h2>
-                    <div className={styles.dailyPlanContainer}>
-                        {dailyPlan.split('**Day').slice(1).map((dayPlan, index) => {
-                            const [dayTitle, ...dayDescription] = dayPlan.split('** -');
-                            return (
-                                <div key={index} className={styles.dayCard}>
-                                    <div className={styles.dayHeader}>{`Day ${index + 1}${dayTitle}`}</div>
-                                    <div className={styles.dayActivities}>{dayDescription.join(' -')}</div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className={styles.imagesGrid}>
-                        {images.map((image, index) => (
-                            <img
-                                key={index}
-                                src={image}
-                                alt={`Activity ${index + 1}`}
-                                className={styles.activityImage}
-                            />
-                        ))}
+                    <h2 className={dailyPlanStyles.dailyPlanTitle}>Let's look at your daily plan trip to: {selectedResult.city}, {selectedResult.country}</h2>
+                    <div className={dailyPlanStyles.dailyPlanContainer}>
+                  {dailyPlan.split('Day').filter(Boolean).map((day, index) => {
+                    const dayHeader = `Day ${index + 1}`;
+                    const activities = day.trim().split('- ').slice(1);
+                    return (
+                      <div key={index} className={dailyPlanStyles.dayCard}>
+                        <div className={dailyPlanStyles.dayHeader}>{dayHeader}</div>
+                        <div className={dailyPlanStyles.dayActivities}>
+                          {activities.map((activity, activityIndex) => (
+                            <div key={activityIndex} className={styles.destinationInfo}>
+                              - {activity.trim()}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                    <div className={styles.tripImages}>
+                        <div className={styles.imageGrid}>
+                            {images.map((image, index) => (
+                                <img
+                                    key={index}
+                                    src={image}
+                                    alt={`Trip Image ${index + 1}`}
+                                    className={styles.image}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </main>
             )}
-
 
 
             {/* Footer */}
