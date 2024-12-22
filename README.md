@@ -1,4 +1,4 @@
-# Trip-planner
+# Trip_Planner
 
 ## Description
 
